@@ -12,7 +12,7 @@
 #include<errno.h>
 int main()
 {
-	int s,r,recb,sntb;
+	int s,r,recb,sntb,x;
 	struct sockaddr_in server;
 	char buff[50];
 	s=socket(AF_INET,SOCK_STREAM,0);
@@ -34,8 +34,25 @@ int main()
 		exit(0);
 	}
 	printf("\nSocket connected.");
-
-	strcpy(buff," Technology");
+	/*struct hostent *host_entry;
+	int hostname;
+	char hostbuffer[256];
+	char *ipbuffer;
+	hostname=gethostname(hostbuffer,sizeof(hostbuffer));
+	host_entry=gethostbyname(hostbuffer);
+	ipbuffer = inet_ntoa(*((struct in_addr*)host_entry->h_addr_list[0]));*/
+	char ip[50];
+	strcpy(ip,"127.0.0.1");
+	sntb=send(s,ip,sizeof(ip),0);
+	if(sntb==-1)
+	{
+		close(s);
+		printf("\nMessage Sending Failed");
+		exit(0);
+	}
+	printf("\n\n");
+	printf("Type string 1: ");
+	scanf("%s", buff);
 
 	sntb=send(s,buff,sizeof(buff),0);
 	if(sntb==-1)
@@ -44,25 +61,28 @@ int main()
 		printf("\nMessage Sending Failed");
 		exit(0);
 	}
+	printf("\n\n");
+	printf("Type string 2: ");
+	scanf("%s", buff);
 
-	struct hostent *host_entry;
-	int hostname;
-	char hostbuffer[256];
-	char *ipbuffer;
-	hostname=gethostname(hostbuffer,sizeof(hostbuffer));
-	host_entry=gethostbyname(hostbuffer);
-	ipbuffer = inet_ntoa(*((struct in_addr*)host_entry->h_addr_list[0]));
-	char ip[50];
-	strcpy(ip,ipbuffer);
-	strcat(ip,"    ");
-	printf("\nIP is: %s",ip);
-	sntb=send(s,ip,sizeof(ip),0);
+	sntb=send(s,buff,sizeof(buff),0);
 	if(sntb==-1)
 	{
 		close(s);
 		printf("\nMessage Sending Failed");
 		exit(0);
 	}
+	recb=recv(s,buff,sizeof(buff),0);
+	if(recb==-1)
+	{
+		printf("\nMessage Recieving Failed");	
+		close(s);
+		exit(0);
+	}
+	
+	printf("%s\n", buff);
+	printf("\n\n");
+
 	close(s);
 
 }
