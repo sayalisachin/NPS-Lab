@@ -1,81 +1,85 @@
+#include<string.h>
+#include<unistd.h>
+#include<sys/socket.h>
+#include<sys/types.h>
+#include<netinet/in.h>
+#include<stdlib.h>
+#include<stdio.h>
+struct dns
+{
+	char ip[15];
+	char name[20];
+};
+int main()
+{
+	int s,r,recb,sntb,x,ns,a=0;
+	socklen_t len;
+	struct sockaddr_in server,client;
+	char buff[100];
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
+	s=socket(AF_INET,SOCK_STREAM,0);
+	if(s==-1)
+	{
+		printf("\nSocket creation error.");
+		exit(0);
+	}
+	printf("\nSocket created.");
 
-#define SERVER_PORT 8888
-#define BUFFER_SIZE 256
-#define CRC_POLYNOMIAL 0x8005 // CRC-16 polynomial
+	server.sin_family=AF_INET;
+	server.sin_port=htons(3388);
+	server.sin_addr.s_addr=htonl(INADDR_ANY);
 
-int checkCRC16(const char *data) {
-    unsigned short crc = 0;
-    int i, j;
-    for (i = 0; i < strlen(data) - 4; i++) {
-        crc ^= (unsigned short)data[i] << 8;
-        for (j = 0; j < 8; j++) {
-            if (crc & 0x8000) {
-                crc = (crc << 1) ^ CRC_POLYNOMIAL;
-            } else {
-                crc <<= 1;
-            }
-        }
-    }
-    unsigned short receivedCRC = atoi(data + strlen(data) - 4);
-    return crc == receivedCRC;
-}
+	r=bind(s,(struct sockaddr*)&server,sizeof(server));
+	if(r==-1)
+	{
+		printf("\nBinding error.");
+		exit(0);
+	}
+	printf("\nSocket binded.");
 
-int main() {
-    int server_socket, client_socket;
-    struct sockaddr_in server_addr, client_addr;
-    socklen_t addr_len = sizeof(client_addr);
-    char buffer[BUFFER_SIZE];
+	r=listen(s,1);
+	if(r==-1)
+	{
+		close(s);
+		exit(0);
+	}
+	printf("\nSocket listening.");
 
-    server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_socket == -1) {
-        perror("Socket creation failed");
-        exit(EXIT_FAILURE);
-    }
+	len=sizeof(client);
 
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(SERVER_PORT);
-
-    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        perror("Bind failed");
-        close(server_socket);
-        exit(EXIT_FAILURE);
-    }
-
-    if (listen(server_socket, 5) < 0) {
-        perror("Listen failed");
-        close(server_socket);
-        exit(EXIT_FAILURE);
-    }
-
-    printf("Waiting for a connection...\n");
-
-    client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &addr_len);
-
-    if (client_socket < 0) {
-        perror("Accept failed");
-        close(server_socket);
-        exit(EXIT_FAILURE);
-    }
-
-    // Receive data from the client
-    recv(client_socket, buffer, BUFFER_SIZE, 0);
-
-    // Check CRC-16
-    if (checkCRC16(buffer)) {
-        printf("Received data with correct CRC-16: %s\n", buffer);
-    } else {
-        printf("Received data with incorrect CRC-16: %s\n", buffer);
-    }
-
-    close(server_socket);
-    close(client_socket);
-    return 0;
-}
-
+	ns=accept(s,(struct sockaddr*)&client, &len);
+	if(ns==-1)
+	{
+		close(s);
+		exit(0);
+	}
+	printf("\nSocket accepting.");
+	recb=recv(ns,buff,sizeof(buff),0);
+	if(recb==-1)
+	{
+		printf("\nMessage Recieving Failed");		
+		close(s);
+		close(ns);
+		exit(0);
+	}	
+	struct dns d[2];
+	strcpy(d[0].ip,"176.0.0.2");
+	strcpy(d[1].ip,"176.0.0.1");
+	strcpy(d[0].name,"google.com");
+	strcpy(d[1].name,"facebook.com");
+	if(strcmp(buff,d[0].ip)==0)
+		strcpy(buff,d[0].name);
+	else if(strcmp(buff,d[1].ip)==0)
+		strcpy(buff,d[1].name);
+	else
+		strcpy(buff,"Could not find IP");
+	sntb=send(ns,buff,sizeof(buff),0);
+		if(sntb==-1)
+		{
+			close(s);
+			printf("\nMessage Sending Failed");
+			exit(0);
+		}	
+		close(ns);
+		close(s);
+	}

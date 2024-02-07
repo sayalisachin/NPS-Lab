@@ -5,16 +5,42 @@
 #include<netinet/in.h>
 #include<stdlib.h>
 #include<stdio.h>
-#define MAXLINE 4096 /*max text line length*/
-#define SERV_PORT 3000 /*port*/
-#define LISTENQ 8 /*maximum number of client connections*/
+
+struct Student{
+	char student_id[15];
+	char subject_id[3][10];
+	char fname[15];
+	char lname[15];
+	char marks[3][3];
+	char add[10];
+	char dep[10];
+};
+struct subjects{
+char subject_id[15];
+char subject_name[15];
+char cycle[5];
+};
+struct cycle{
+char cycle_id[15];
+char cycle_name[15];
+};
+struct subject_teacher{
+char teacher_id[15];
+char subject_id[15];
+};
+struct subject_time{
+char subject_id[15];
+char day[15];
+char time[15];
+};
+	
 int main()
 {
-	int s,r,recb,sntb,x,ns,a=0;
+	int s,r,recb,sntb,x,ns,a=0;	
 	socklen_t len;
 	struct sockaddr_in server,client;
-	char buff[100];
-	char str[100];
+	char buff[200];
+
 	s=socket(AF_INET,SOCK_STREAM,0);
 	if(s==-1)
 	{
@@ -35,94 +61,287 @@ int main()
 	}
 	printf("\nSocket binded.");
 
-	r=listen(s,LISTENQ);
+	r=listen(s,1);
 	if(r==-1)
 	{
 		close(s);
 		exit(0);
 	}
-	printf("\nSocket listening.\n");
+	printf("\nSocket listening.");
 
-	int childpid,n,no_of_clients=0;
-
-	for(;;){
 	len=sizeof(client);
+
 	ns=accept(s,(struct sockaddr*)&client, &len);
 	if(ns==-1)
 	{
 		close(s);
 		exit(0);
 	}
-	printf("\nSocket accepting.\n");
-
-	if(no_of_clients==2)
+	printf("\nSocket accepting.");
+	struct Student stu[2];
+	struct subjects sub[3];
+	struct subject_teacher st[3];
+	struct cycle cle[2];
+	struct subject_time stime[3];
+	strcpy(stu[0].student_id,"220911266");
+	strcpy(stu[1].student_id,"220911267");
+	strcpy(stu[0].subject_id[0],"ICT123");
+	strcpy(stu[0].subject_id[1],"ICT456");
+	strcpy(stu[0].subject_id[2],"HUM789");
+	strcpy(stu[1].subject_id[0],"ICT123");
+	strcpy(stu[1].subject_id[1],"ICT456");
+	strcpy(stu[1].subject_id[2],"HUM789");
+	strcpy(stu[0].fname,"SAYALI
+	strcpy(stu[1].fname,"SONALI");
+	strcpy(stu[0].lname,"SACHIN");
+	strcpy(stu[1].lname,"CHORGE");
+	strcpy(stu[0].marks[0],"85");
+	strcpy(stu[0].marks[1],"75");
+	strcpy(stu[0].marks[2],"88");
+	strcpy(stu[1].marks[0],"77");
+	strcpy(stu[1].marks[1],"84");
+	strcpy(stu[1].marks[2],"86");
+	strcpy(stu[0].add,"MANIPAL");
+	strcpy(stu[1].add,"UDUIPI");
+	strcpy(stu[0].dep,"IT");
+	strcpy(stu[1].dep,"IT");
+	strcpy(sub[0].subject_id,"ICT123");
+	strcpy(sub[1].subject_id,"ICT234");
+	strcpy(sub[2].subject_id,"HUM198");
+	strcpy(sub[0].subject_name,"DS");
+	strcpy(sub[1].subject_name,"CNP");
+	strcpy(sub[2].subject_name,"Management");
+	strcpy(sub[0].cycle,"ODD");
+	strcpy(sub[1].cycle,"ODD");
+	strcpy(sub[2].cycle,"EVEN");
+	strcpy(st[0].subject_id,"ICT123");
+	strcpy(st[1].subject_id,"ICT234");
+	strcpy(st[2].subject_id,"HUM198");
+	strcpy(st[0].teacher_id,"ASP");
+	strcpy(st[1].teacher_id,"RG");
+	strcpy(st[2].teacher_id,"AK");
+	strcpy(cle[0].cycle_id,"EVEN");
+	strcpy(cle[1].cycle_id,"ODD");
+	strcpy(cle[0].cycle_name,"22020");
+	strcpy(cle[1].cycle_name,"2021");
+	strcpy(stime[0].subject_id,"ICT123");
+	strcpy(stime[1].subject_id,"ICT234");
+	strcpy(stime[2].subject_id,"HUM198");
+	strcpy(stime[0].day,"WEDNESDAY");
+	strcpy(stime[1].day,"MONDAY");
+	strcpy(stime[2].day,"THURSDAY");
+	strcpy(stime[0].time,"08:00");
+	strcpy(stime[1].time,"10:00");
+	strcpy(stime[2].time,"03:00");
+	char PID[5];	
+	while(1)
 	{
-		printf("\nMore than 2 clients!\n");
+	recb=recv(ns,buff,sizeof(buff),0);
+	if(recb==-1)
+	{
+		printf("\nMessage Recieving Failed");		
+		close(s);
 		close(ns);
-		break;
-	}
-	no_of_clients++;
-	
-	if ( (childpid = fork ()) == 0 ) {//if it’s 0, it’s child process
-	//printf ("%s\n","Child created for dealing with client requests");
-  	//close listening socket
-	close (s);
-	n = recv(ns, buff, sizeof(buff),0);
-	//strcat(str,buff);
-	if (n < 0){
-	printf("%s\n", "Read error");
-	exit(0);
-	}
-	FILE *fptr;
-	fptr=fopen("tmp.txt","a");
-	fputs(buff,fptr);
-	fclose(fptr);
-	char buff2[50];
-	n = recv(ns, buff2, sizeof(buff2),0);
-	if (n < 0){
-	printf("%s\n", "Read error");
-	exit(0);
-	}
-	FILE *fptr2;
-	fptr2=fopen("tmp2.txt","a");
-	fputs(buff2,fptr2);
-	fclose(fptr2);
-	if(no_of_clients==2)
+		exit(0);
+	}	
+	int n,i=0,j=0;
+	char temp[50];
+	int ch=buff[0];
+	n=buff[1];
+	for(i=0;i<n;i++)
 	{
-		FILE *fp;
-		int line_num = 1;
-		char temp[512];
-		if((fp = fopen("tmp.txt", "r")) == NULL) {	
-		close(s);
-		exit(0);
-		}
-		while(fgets(temp, 512, fp) != NULL) {
-		strcpy(str,temp);
-		printf("%s", str);		
-		line_num++;
-		}
-		if(fp) {
-		fclose(fp);
-		}
-		FILE *fp2;
-		int line_num2 = 1;
-		char temp2[512];
-		if((fp2 = fopen("tmp2.txt", "r")) == NULL) {	
-		close(s);
-		exit(0);
-		}
-		while(fgets(temp2, 512, fp2) != NULL) {
-		strcpy(str,temp2);
-		printf("\n%s", str);		
-		line_num2++;
-		}
-		if(fp2) {
-		fclose(fp2);
-		}
+		temp[j]=buff[i+2];
+		j++;
 	}
+	temp[j]='\0';
+	if(ch==4)
+		break;
+	int pid=fork();
+	if(pid==0)
+	{
+		//child 1 and ch=1
+		if(ch==1)
+		{
+			if(strcmp(stu[0].student_id,temp)==0)
+			{	
+				strcpy(buff,"");
+				strcpy(buff,"Name of student is: ");
+				strcat(buff,stu[0].fname);
+				strcat(buff," ");
+				strcat(buff,stu[0].lname);
+				strcat(buff," \nAdress is: ");
+				strcat(buff,stu[0].add);
+				strcat(buff," \nPID is: ");
+				sprintf(PID, "%d", getpid());
+				strcat(buff,PID);
+			}
+			else if(strcmp(stu[1].student_id,temp)==0)
+			{
+				strcpy(buff,"");
+				strcpy(buff,"Name of student is: ");
+				strcat(buff,stu[0].fname);
+				strcat(buff," ");
+				strcat(buff,stu[0].lname);
+				strcat(buff," \nAdress is: ");
+				strcat(buff,stu[1].add);
+				strcat(buff," \nPID is: ");
+				sprintf(PID, "%d", getpid());
+				strcat(buff,PID);
+			}
+			else
+			{
+				strcpy(buff,"");
+				strcpy(buff,"INCORRECT INPUT\n");
+			}
+				
+
+	sntb=send(ns,buff,sizeof(buff),0);
+	if(sntb==-1)
+	{
+		printf("\nMessage Sending Failed");
+		close(s);
+		close(ns);
+		exit(0);
+	}
+		}
+		else
+		{
+			int p=fork();
+			if(p==0)
+			{
+				//child 2 and ch=2
+				if(ch==2)
+				{
+					if(strcmp(stu[0].fname,temp)==0)
+					{
+						strcpy(buff,"");
+						strcpy(buff,"Dept sem section courses: \n");
+						strcat(buff,stu[0].dep);
+						//strcat(buff," ");
+						//strcat(buff,stu[0].sem);
+						strcat(buff," 3");
+						//strcat(buff,stu[0].section);
+						strcat(buff,"  A");
+						strcat(buff,stu[0].subject_id[0]);
+						strcat(buff," ");
+						strcat(buff,stu[0].subject_id[1]);
+						strcat(buff," ");
+						strcat(buff,stu[0].subject_id[2]);
+						strcat(buff," \nPID is: ");
+						sprintf(PID, "%d", getpid());
+						strcat(buff,PID);
+						
+					}
+					else if(strcmp(stu[1].fname,temp)==0)
+					{
+						strcpy(buff,"");
+						strcpy(buff,"Dept sem section courses: \n");
+						strcat(buff,stu[1].dep	);
+						strcat(buff,"  3");
+						//strcat(buff,stu[1].sem);
+						//strcat(buff,"  ");
+						//strcat(buff,stu[1].section);
+						strcat(buff,"  A");
+						strcat(buff,stu[1].subject_id[0]);
+						strcat(buff," ");
+						strcat(buff,stu[1].subject_id[1]);
+						strcat(buff," ");
+						strcat(buff,stu[1].subject_id[2]);
+						strcat(buff," \nPID is: ");
+						sprintf(PID, "%d", getpid());
+						strcat(buff,PID);
+					}
+					else
+					{
+						strcpy(buff,"");
+						strcpy(buff,"INCORRECT INPUT\n");
+					}
+
+	sntb=send(ns,buff,sizeof(buff),0);
+	if(sntb==-1)
+	{
+		printf("\nMessage Sending Failed");
+		close(s);
+		close(ns);
+		exit(0);
+	}
+				}
+				else
+				{
+					int pd=fork();
+					if(pd==0)
+					{
+						//child 3 and ch=3
+						if(strcmp(stu[0].subject_id[0],temp)==0)
+						{
+							strcpy(buff,"");
+							strcpy(buff,"Marks are: \n");
+							strcat(buff,stu[0].fname);
+							strcat(buff,": ");
+							strcat(buff,stu[0].marks[0]);
+							strcat(buff,"\n");
+							strcat(buff,stu[1].fname);
+							strcat(buff,": ");
+							strcat(buff,stu[1].marks[0]);
+							strcat(buff," \nPID is: ");
+							sprintf(PID, "%d", getpid());
+							strcat(buff,PID);
+						}
+						else if(strcmp(stu[0].subject_id[1],temp)==0)
+						{
+							strcpy(buff,"");
+							strcpy(buff,"Marks are: \n");
+							strcat(buff,stu[0].fname);
+							strcat(buff,": ");
+							strcat(buff,stu[0].marks[1]);
+							strcat(buff,"\n");
+							strcat(buff,stu[1].fname);
+							strcat(buff,": ");
+							strcat(buff,stu[1].marks[1]);
+							strcat(buff," \nPID is: ");
+							sprintf(PID, "%d", getpid());
+							strcat(buff,PID);
+						}
+						else if(strcmp(stu[0].subject_id[2],temp)==0)
+						{
+							strcpy(buff,"");
+							strcpy(buff,"Marks are: \n");
+							strcat(buff,stu[0].fname);
+							strcat(buff,": ");
+							strcat(buff,stu[0].marks[2]);
+							strcat(buff,"\n");
+							strcat(buff,stu[1].fname);
+							strcat(buff,": ");
+							strcat(buff,stu[1].marks[2]);
+							strcat(buff," \nPID is: ");
+							sprintf(PID, "%d", getpid());
+							strcat(buff,PID);
+						}
+						else
+						{
+							strcpy(buff,"");
+							strcpy(buff,"INCORRECT INPUT\n");
+						}
+
+	sntb=send(ns,buff,sizeof(buff),0);
+	if(sntb==-1)
+	{
+		printf("\nMessage Sending Failed");
+		close(s);
+		close(ns);
+		exit(0);
+	}
+						exit(0);
+					}
+
+				}
+				exit(0);
+			}
+		}
 	exit(0);
 	}
- //close socket of the server
-close(ns);
 }
+
+	close(ns);
+	close(s);
 }

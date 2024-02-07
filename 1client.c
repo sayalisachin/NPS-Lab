@@ -1,20 +1,18 @@
 #include<string.h>
-#include<arpa/inet.h> //defines internet operations
+#include<arpa/inet.h>
 #include<stdlib.h>
 #include<stdio.h>
-#include<unistd.h> //posix binding
+#include<unistd.h>
 #include<sys/socket.h>
 #include<sys/types.h>
-#include<netinet/in.h> //port addresws for sockets
-#include<fcntl.h> //used by cmd
-#include<sys/stat.h> //defines file functionalities
-#include<netdb.h> //retrieves hostent structure that includes host ipv4
-#include<errno.h> //retrieving error conditions
+#include<netinet/in.h>
+#include<fcntl.h>
+#include<sys/stat.h>
 int main()
 {
 	int s,r,recb,sntb,x;
 	struct sockaddr_in server;
-	char buff[50];
+	char buff[200];
 	s=socket(AF_INET,SOCK_STREAM,0);
 	if(s==-1)
 	{
@@ -34,35 +32,110 @@ int main()
 		exit(0);
 	}
 	printf("\nSocket connected.");
-
-	strcpy(buff,"Institute Of");
-
-	sntb=send(s,buff,sizeof(buff),0);
-	if(sntb==-1)
+	while(1)
 	{
-		close(s);
-		printf("\nMessage Sending Failed");
-		exit(0);
-	}
-
-	struct hostent *host_entry;
-	int hostname;
-	char hostbuffer[256];
-	char *ipbuffer;
-	hostname=gethostname(hostbuffer,sizeof(hostbuffer));
-	host_entry=gethostbyname(hostbuffer);
-	ipbuffer = inet_ntoa(*((struct in_addr*)host_entry->h_addr_list[0]));
-	char ip[50];
-	strcpy(ip,ipbuffer);
-	strcat(ip,"    ");
-	printf("\nIP is: %s",ip);
-	sntb=send(s,ip,sizeof(ip),0);
-	if(sntb==-1)
+	int i;
+	char temp[50];
+	printf("\n\n");
+	printf("Enter your choice: \n1 for Registration number\n2 for Name of student\n3 for Subject code\n4 to Exit\n");
+	int n;
+	int len;
+	scanf("%d", &n);
+	switch(n)
 	{
-		close(s);
-		printf("\nMessage Sending Failed");
-		exit(0);
+		case 1: printf("\nEnter Registration number: ");
+		scanf("%s",temp);
+		buff[0]=1;
+		len=strlen(temp);
+		buff[1]=len;
+		for(i=0;i<len;i++)
+		{
+			buff[i+2]=temp[i];
+		}
+		sntb=send(s,buff,sizeof(buff),0);
+		if(sntb==-1)
+		{
+			close(s);
+			printf("\nMessage Sending Failed");
+			exit(0);
+		}
+		recb=recv(s,buff,sizeof(buff),0);
+		if(recb==-1)
+		{
+			printf("\nMessage Recieving Failed");	
+			close(s);
+			exit(0);
+		}
+		printf("\n%s\n", buff);
+		break;
+
+		case 2:printf("\nEnter name of student: ");
+		scanf("%s",temp);
+		buff[0]=2;
+		len=strlen(temp);
+		buff[1]=len;
+		for(i=0;i<len;i++)
+		{
+			buff[i+2]=temp[i];
+		}
+		sntb=send(s,buff,sizeof(buff),0);
+		if(sntb==-1)
+		{
+			close(s);
+			printf("\nMessage Sending Failed");
+			exit(0);
+		}
+		recb=recv(s,buff,sizeof(buff),0);
+		if(recb==-1)
+		{
+			printf("\nMessage Recieving Failed");	
+			close(s);
+			exit(0);
+		}
+		printf("\n%s\n", buff);
+		break;
+
+		case 3:printf("\nEnter subject code: ");
+		scanf("%s",temp);
+		buff[0]=3;
+		len=strlen(temp);
+		buff[1]=len;
+		for(i=0;i<len;i++)
+		{
+			buff[i+2]=temp[i];
+		}
+		sntb=send(s,buff,sizeof(buff),0);
+		if(sntb==-1)
+		{
+			close(s);
+			printf("\nMessage Sending Failed");
+			exit(0);
+		}
+		recb=recv(s,buff,sizeof(buff),0);
+		if(recb==-1)
+		{
+			printf("\nMessage Recieving Failed");	
+			close(s);
+			exit(0);
+		}
+		printf("\n%s\n", buff);
+		break;
+
+		case 4:buff[0]=4;
+		sntb=send(s,buff,sizeof(buff),0);
+		if(sntb==-1)
+		{
+			close(s);
+			printf("\nMessage Sending Failed");
+			exit(0);
+		}
+		break;
+		default: printf("\nTry again!\n");
 	}
+	if(n==4)
+		break;
+}
+	
 	close(s);
 
 }
