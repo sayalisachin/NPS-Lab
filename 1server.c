@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,23 +6,15 @@
 
 #define SERVER_PORT 8888
 #define BUFFER_SIZE 256
-#define CRC_POLYNOMIAL 0x8005 // CRC-16 polynomial
 
-int checkCRC16(const char *data) {
-    unsigned short crc = 0;
-    int i, j;
-    for (i = 0; i < strlen(data) - 4; i++) {
-        crc ^= (unsigned short)data[i] << 8;
-        for (j = 0; j < 8; j++) {
-            if (crc & 0x8000) {
-                crc = (crc << 1) ^ CRC_POLYNOMIAL;
-            } else {
-                crc <<= 1;
-            }
+int checkParity(const char *data) {
+    int parity = 0;
+    for (int i = 0; i < strlen(data) - 1; i++) {
+        if (data[i] == '1') {
+            parity ^= 1;
         }
     }
-    unsigned short receivedCRC = atoi(data + strlen(data) - 4);
-    return crc == receivedCRC;
+    return parity == (data[strlen(data) - 1] - '0');
 }
 
 int main() {
@@ -67,11 +58,11 @@ int main() {
     // Receive data from the client
     recv(client_socket, buffer, BUFFER_SIZE, 0);
 
-    // Check CRC-16
-    if (checkCRC16(buffer)) {
-        printf("Received data with correct CRC-16: %s\n", buffer);
+    // Check parity
+    if (checkParity(buffer)) {
+        printf("Received data with correct parity: %s\n", buffer);
     } else {
-        printf("Received data with incorrect CRC-16: %s\n", buffer);
+        printf("Received data with incorrect parity: %s\n", buffer);
     }
 
     close(server_socket);

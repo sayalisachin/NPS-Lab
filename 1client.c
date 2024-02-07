@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,22 +7,15 @@
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 8888
 #define BUFFER_SIZE 256
-#define CRC_POLYNOMIAL 0x8005 // CRC-16 polynomial
 
-unsigned short calculateCRC16(const char *data) {
-    unsigned short crc = 0;
-    int i, j;
-    for (i = 0; i < strlen(data); i++) {
-        crc ^= (unsigned short)data[i] << 8;
-        for (j = 0; j < 8; j++) {
-            if (crc & 0x8000) {
-                crc = (crc << 1) ^ CRC_POLYNOMIAL;
-            } else {
-                crc <<= 1;
-            }
+int calculateParity(const char *data) {
+    int parity = 0;
+    for (int i = 0; i < strlen(data); i++) {
+        if (data[i] == '1') {
+            parity ^= 1;
         }
     }
-    return crc;
+    return parity;
 }
 
 int main() {
@@ -47,13 +39,13 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    printf("Enter data to transmit: ");
+    printf("Enter binary data to transmit: ");
     fgets(buffer, BUFFER_SIZE, stdin);
     buffer[strcspn(buffer, "\n")] = '\0';  // Remove newline character
 
-    // Calculate CRC-16 and append it to the data
-    unsigned short crc = calculateCRC16(buffer);
-    sprintf(buffer + strlen(buffer), "%hu", crc);
+    // Calculate even parity and append it to the data
+    int parity = calculateParity(buffer);
+    sprintf(buffer + strlen(buffer), "%d", parity);
 
     // Send data to the server
     send(client_socket, buffer, strlen(buffer), 0);
